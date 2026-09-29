@@ -1,129 +1,96 @@
 /**
- * Educational Group Hub - Complete Application Script
+ * Educational Group Hub - Streamlined Minimal Application
  * Features:
- * - Direct One-Tap Launch to Messenger/Facebook on Card Click
- * - 69 default educational groups (Science, Humanities, Commerce x HSC & Admission)
- * - Exact level-aware search (L1 != L10, Hard Task matching)
- * - In-place Admin Link editing with single-source-of-truth localStorage
- * - Bright, energetic, mobile-first design with PWA support
+ * - Simple & minimal: Zero subject clutter, direct group access on home screen
+ * - Big, fat, easy-to-tap cards with dynamic circulating light
+ * - Instant one-tap launch to Messenger
+ * - Exact level matching (L1 != L10, Hard Task matching)
+ * - Ultra-fast maintenance: Admin can update group links in seconds
  */
 
 // ==========================================
 // 1. CONSTANTS & CONFIGURATION
 // ==========================================
-const STORAGE_KEY = "educationalGroupHubData";
+const STORAGE_KEY = "educationalGroupHubData_v4";
 const FAVORITES_KEY = "educationalGroupHubFavorites";
 const RECENT_KEY = "educationalGroupHubRecent";
 const THEME_KEY = "educationalGroupHubTheme";
 const ADMIN_AUTH_KEY = "educationalGroupHubAdminAuth";
 
-// Default admin password (can be customized by the admin)
+// Default admin password
 const ADMIN_PASSWORD = "admin123";
 
 // ==========================================
-// 2. DEFAULT 69 EDUCATIONAL GROUPS DATASET
-// 3 Sections x (10 HSC + 13 Admission) = 69 Groups
+// 2. 69 CORE EDUCATIONAL GROUPS DATASET
+// Exactly 3 Sections: Science, Humanities, Commerce
+// Exactly 23 Groups each (10 HSC + 13 Admission) = 69 Groups
 // ==========================================
-const DEFAULT_GROUPS = [
-  // ----------------------------------------
-  // SCIENCE SECTION (23 Groups)
-  // ----------------------------------------
-  // Science - HSC (10 Groups: L1 - L10)
-  { id: 1, section: "Science", category: "HSC", level: "L1", groupName: "Science HSC L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 2, section: "Science", category: "HSC", level: "L2", groupName: "Science HSC L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 3, section: "Science", category: "HSC", level: "L3", groupName: "Science HSC L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 4, section: "Science", category: "HSC", level: "L4", groupName: "Science HSC L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 5, section: "Science", category: "HSC", level: "L5", groupName: "Science HSC L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 6, section: "Science", category: "HSC", level: "L6", groupName: "Science HSC L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 7, section: "Science", category: "HSC", level: "L7", groupName: "Science HSC L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 8, section: "Science", category: "HSC", level: "L8", groupName: "Science HSC L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 9, section: "Science", category: "HSC", level: "L9", groupName: "Science HSC L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 10, section: "Science", category: "HSC", level: "L10", groupName: "Science HSC L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
+function generateInitialGroups() {
+  const sections = ["Science", "Humanities", "Commerce"];
+  const list = [];
+  let idCounter = 1;
 
-  // Science - Admission (13 Groups: L1 - L10 + Hard Task 1..3)
-  { id: 11, section: "Science", category: "Admission", level: "L1", groupName: "Science Admission L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 12, section: "Science", category: "Admission", level: "L2", groupName: "Science Admission L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 13, section: "Science", category: "Admission", level: "L3", groupName: "Science Admission L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 14, section: "Science", category: "Admission", level: "L4", groupName: "Science Admission L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 15, section: "Science", category: "Admission", level: "L5", groupName: "Science Admission L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 16, section: "Science", category: "Admission", level: "L6", groupName: "Science Admission L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 17, section: "Science", category: "Admission", level: "L7", groupName: "Science Admission L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 18, section: "Science", category: "Admission", level: "L8", groupName: "Science Admission L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 19, section: "Science", category: "Admission", level: "L9", groupName: "Science Admission L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 20, section: "Science", category: "Admission", level: "L10", groupName: "Science Admission L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 21, section: "Science", category: "Admission", level: "Hard Task 1", groupName: "Science Admission Hard Task 1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 22, section: "Science", category: "Admission", level: "Hard Task 2", groupName: "Science Admission Hard Task 2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 23, section: "Science", category: "Admission", level: "Hard Task 3", groupName: "Science Admission Hard Task 3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
+  sections.forEach((section) => {
+    // 10 HSC groups: L1 to L10
+    for (let i = 1; i <= 10; i++) {
+      list.push({
+        id: idCounter++,
+        section: section,
+        category: "HSC",
+        level: `L${i}`,
+        groupName: `${section} HSC L${i}`,
+        platform: "Messenger",
+        link: "",
+        admin: "Shizan Vaiya",
+        batch: "HSC 2025/2026",
+        status: "Active"
+      });
+    }
 
-  // ----------------------------------------
-  // HUMANITIES SECTION (23 Groups)
-  // ----------------------------------------
-  // Humanities - HSC (10 Groups: L1 - L10)
-  { id: 24, section: "Humanities", category: "HSC", level: "L1", groupName: "Humanities HSC L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 25, section: "Humanities", category: "HSC", level: "L2", groupName: "Humanities HSC L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 26, section: "Humanities", category: "HSC", level: "L3", groupName: "Humanities HSC L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 27, section: "Humanities", category: "HSC", level: "L4", groupName: "Humanities HSC L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 28, section: "Humanities", category: "HSC", level: "L5", groupName: "Humanities HSC L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 29, section: "Humanities", category: "HSC", level: "L6", groupName: "Humanities HSC L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 30, section: "Humanities", category: "HSC", level: "L7", groupName: "Humanities HSC L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 31, section: "Humanities", category: "HSC", level: "L8", groupName: "Humanities HSC L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 32, section: "Humanities", category: "HSC", level: "L9", groupName: "Humanities HSC L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 33, section: "Humanities", category: "HSC", level: "L10", groupName: "Humanities HSC L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
+    // 13 Admission groups: L1 to L10 + Hard Task 1..3
+    for (let i = 1; i <= 10; i++) {
+      list.push({
+        id: idCounter++,
+        section: section,
+        category: "Admission",
+        level: `L${i}`,
+        groupName: `${section} Admission L${i}`,
+        platform: "Messenger",
+        link: "",
+        admin: "Shizan Vaiya",
+        batch: "Admission 2025",
+        status: "Active"
+      });
+    }
 
-  // Humanities - Admission (13 Groups: L1 - L10 + Hard Task 1..3)
-  { id: 34, section: "Humanities", category: "Admission", level: "L1", groupName: "Humanities Admission L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 35, section: "Humanities", category: "Admission", level: "L2", groupName: "Humanities Admission L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 36, section: "Humanities", category: "Admission", level: "L3", groupName: "Humanities Admission L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 37, section: "Humanities", category: "Admission", level: "L4", groupName: "Humanities Admission L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 38, section: "Humanities", category: "Admission", level: "L5", groupName: "Humanities Admission L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 39, section: "Humanities", category: "Admission", level: "L6", groupName: "Humanities Admission L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 40, section: "Humanities", category: "Admission", level: "L7", groupName: "Humanities Admission L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 41, section: "Humanities", category: "Admission", level: "L8", groupName: "Humanities Admission L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 42, section: "Humanities", category: "Admission", level: "L9", groupName: "Humanities Admission L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 43, section: "Humanities", category: "Admission", level: "L10", groupName: "Humanities Admission L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 44, section: "Humanities", category: "Admission", level: "Hard Task 1", groupName: "Humanities Admission Hard Task 1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 45, section: "Humanities", category: "Admission", level: "Hard Task 2", groupName: "Humanities Admission Hard Task 2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 46, section: "Humanities", category: "Admission", level: "Hard Task 3", groupName: "Humanities Admission Hard Task 3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
+    for (let h = 1; h <= 3; h++) {
+      list.push({
+        id: idCounter++,
+        section: section,
+        category: "Admission",
+        level: `Hard Task ${h}`,
+        groupName: `${section} Admission Hard Task ${h}`,
+        platform: "Messenger",
+        link: "",
+        admin: "Shizan Vaiya",
+        batch: "Admission 2025",
+        status: "Active"
+      });
+    }
+  });
 
-  // ----------------------------------------
-  // COMMERCE SECTION (23 Groups)
-  // ----------------------------------------
-  // Commerce - HSC (10 Groups: L1 - L10)
-  { id: 47, section: "Commerce", category: "HSC", level: "L1", groupName: "Commerce HSC L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 48, section: "Commerce", category: "HSC", level: "L2", groupName: "Commerce HSC L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 49, section: "Commerce", category: "HSC", level: "L3", groupName: "Commerce HSC L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 50, section: "Commerce", category: "HSC", level: "L4", groupName: "Commerce HSC L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 51, section: "Commerce", category: "HSC", level: "L5", groupName: "Commerce HSC L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 52, section: "Commerce", category: "HSC", level: "L6", groupName: "Commerce HSC L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 53, section: "Commerce", category: "HSC", level: "L7", groupName: "Commerce HSC L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 54, section: "Commerce", category: "HSC", level: "L8", groupName: "Commerce HSC L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 55, section: "Commerce", category: "HSC", level: "L9", groupName: "Commerce HSC L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
-  { id: 56, section: "Commerce", category: "HSC", level: "L10", groupName: "Commerce HSC L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "HSC 2025/2026", status: "Active" },
+  return list;
+}
 
-  // Commerce - Admission (13 Groups: L1 - L10 + Hard Task 1..3)
-  { id: 57, section: "Commerce", category: "Admission", level: "L1", groupName: "Commerce Admission L1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 58, section: "Commerce", category: "Admission", level: "L2", groupName: "Commerce Admission L2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 59, section: "Commerce", category: "Admission", level: "L3", groupName: "Commerce Admission L3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 60, section: "Commerce", category: "Admission", level: "L4", groupName: "Commerce Admission L4", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 61, section: "Commerce", category: "Admission", level: "L5", groupName: "Commerce Admission L5", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 62, section: "Commerce", category: "Admission", level: "L6", groupName: "Commerce Admission L6", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 63, section: "Commerce", category: "Admission", level: "L7", groupName: "Commerce Admission L7", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 64, section: "Commerce", category: "Admission", level: "L8", groupName: "Commerce Admission L8", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 65, section: "Commerce", category: "Admission", level: "L9", groupName: "Commerce Admission L9", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 66, section: "Commerce", category: "Admission", level: "L10", groupName: "Commerce Admission L10", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 67, section: "Commerce", category: "Admission", level: "Hard Task 1", groupName: "Commerce Admission Hard Task 1", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 68, section: "Commerce", category: "Admission", level: "Hard Task 2", groupName: "Commerce Admission Hard Task 2", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" },
-  { id: 69, section: "Commerce", category: "Admission", level: "Hard Task 3", groupName: "Commerce Admission Hard Task 3", platform: "Messenger", link: "", admin: "Shizan Vaiya", batch: "Admission 2025", status: "Active" }
-];
+const DEFAULT_GROUPS = generateInitialGroups();
 
 // ==========================================
 // 3. APPLICATION STATE
-// Central Dataset Architecture
 // ==========================================
 let groups = [];
 let favorites = [];
 let recentlyOpened = [];
-let currentNavigation = { view: "home", section: null, category: null, level: null };
+let currentCategoryFilter = "all"; // 'all' | 'Science' | 'Humanities' | 'Commerce' | 'HSC' | 'Admission' | 'Hard' | 'favorites' | 'recent'
 let deferredInstallPrompt = null;
 
 // ==========================================
@@ -136,20 +103,18 @@ function initApp() {
   initTheme();
   initServiceWorker();
   initPWAInstall();
-  renderApp();
+  renderCards();
   setupEventListeners();
   updateQuickChipCounts();
 }
 
-/**
- * Loads groups from localStorage or seeds initial 69 groups
- */
 function loadGroups() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      // Validate that all 69 groups are loaded with valid section field
+      if (Array.isArray(parsed) && parsed.length === 69 && parsed[0].section) {
         groups = parsed;
         return;
       }
@@ -157,7 +122,7 @@ function loadGroups() {
   } catch (err) {
     console.error("Error reading localStorage groups:", err);
   }
-  // Fallback to default 69 groups
+  // Load full 69 groups dataset
   groups = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
   saveGroups();
 }
@@ -198,26 +163,25 @@ function saveRecent() {
 }
 
 // ==========================================
-// 5. THEME (BRIGHT & ENERGETIC)
+// 5. THEME (DARK / LIGHT)
 // ==========================================
 function initTheme() {
   const savedTheme = localStorage.getItem(THEME_KEY);
   if (savedTheme) {
     document.documentElement.setAttribute("data-theme", savedTheme);
   } else {
-    // Default to bright, energetic mode!
-    document.documentElement.setAttribute("data-theme", "light");
+    document.documentElement.setAttribute("data-theme", "dark");
   }
   updateThemeIcon();
 }
 
 function toggleTheme() {
-  const current = document.documentElement.getAttribute("data-theme") || "light";
-  const newTheme = current === "light" ? "dark" : "light";
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  const newTheme = current === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", newTheme);
   localStorage.setItem(THEME_KEY, newTheme);
   updateThemeIcon();
-  showToast(newTheme === "light" ? "ব্রাইট মোড চালু হয়েছে ☀️" : "ডার্ক মোড চালু হয়েছে 🌙", "success");
+  showToast(newTheme === "dark" ? "Dark mode 🌙" : "Light mode ☀️", "success");
 }
 
 function updateThemeIcon() {
@@ -225,7 +189,7 @@ function updateThemeIcon() {
   if (!btn) return;
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
   btn.textContent = isDark ? "☀️" : "🌙";
-  btn.title = isDark ? "ব্রাইট মোড চালু করুন" : "ডার্ক মোড চালু করুন";
+  btn.title = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
 }
 
 // ==========================================
@@ -241,13 +205,13 @@ function searchGroups(query) {
 
   return groups.filter((g) => {
     return tokens.every((token) => {
-      // Rule 1: Exact Level token (l1, l2, ..., l10)
+      // Exact Level token (l1, l2, ..., l10)
       const levelMatch = token.match(/^l([1-9]|10)$/i);
       if (levelMatch) {
         return g.level.toLowerCase() === token;
       }
 
-      // Rule 2: Hard Task token
+      // Hard Task token
       if (token === "hard") {
         return g.level.toLowerCase().includes("hard");
       }
@@ -255,7 +219,6 @@ function searchGroups(query) {
         return g.level.toLowerCase().includes("task");
       }
 
-      // Rule 3: Word boundary / Substring matching
       const sectionLower = (g.section || "").toLowerCase();
       const categoryLower = (g.category || "").toLowerCase();
       const groupNameLower = (g.groupName || "").toLowerCase();
@@ -313,7 +276,6 @@ function setupSearchInput() {
     });
   }
 
-  // Close dropdown on click outside
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".search-wrapper")) {
       dropdown.classList.remove("visible");
@@ -339,15 +301,13 @@ function renderLiveSearchResults(query) {
     dropdown.innerHTML = `
       <div class="search-empty-state">
         <div class="search-empty-icon">🔍</div>
-        <div class="search-empty-title">কোন গ্রুপ পাওয়া যায়নি</div>
-        <div class="search-empty-hints">নিচের কি-ওয়ার্ডগুলো সার্চ করে দেখুন:</div>
+        <div class="search-empty-title">No matching groups</div>
+        <div class="search-empty-hints">Try searching for:</div>
         <div class="search-chip-group">
-          <button class="search-hint-chip" onclick="applySearchTerm('L1')">L1</button>
-          <button class="search-hint-chip" onclick="applySearchTerm('HSC')">HSC</button>
-          <button class="search-hint-chip" onclick="applySearchTerm('Admission')">Admission</button>
-          <button class="search-hint-chip" onclick="applySearchTerm('Hard')">Hard Task</button>
-          <button class="search-hint-chip" onclick="applySearchTerm('Science')">Science</button>
-          <button class="search-hint-chip" onclick="applySearchTerm('Commerce')">Commerce</button>
+          <button class="search-hint-chip" onclick="applySearchTerm('L5')">L5</button>
+          <button class="search-hint-chip" onclick="applySearchTerm('Science L5')">Science L5</button>
+          <button class="search-hint-chip" onclick="applySearchTerm('HSC L1')">HSC L1</button>
+          <button class="search-hint-chip" onclick="applySearchTerm('Hard Task')">Hard Task</button>
         </div>
       </div>
     `;
@@ -356,39 +316,31 @@ function renderLiveSearchResults(query) {
 
   let html = `
     <div class="search-results-header">
-      <span>খুঁজে পাওয়া গ্রুপ (${results.length})</span>
-      <span>⚡ ক্লিক করলেই মেসেঞ্জারে যাবে</span>
+      <span>Results (${results.length})</span>
+      <span>⚡ Tap to launch directly</span>
     </div>
+    <div class="search-thin-cards-container">
   `;
 
+  // Display ONLY "Section → Category → Level" (e.g., Science → HSC → L5) in a sleek thin card
   results.forEach((g) => {
-    const isFav = favorites.includes(g.id);
-    const hasLink = Boolean(g.link && g.link.trim());
-
     html += `
-      <div class="search-result-item" onclick="handleSearchResultClick(${g.id})">
-        <div class="result-info">
-          <div class="result-breadcrumb">
-            ${g.section} → ${g.category} → ${g.level}
-          </div>
-          <div class="result-title">${escapeHtml(g.groupName)}</div>
-          <div class="result-badges">
-            <span class="badge badge-messenger">💬 Messenger</span>
-            ${hasLink ? '<span class="badge badge-has-link">🟢 লিংক আছে</span>' : '<span class="badge badge-no-link">⚪ লিংক বাকি</span>'}
-          </div>
+      <div class="search-thin-card" onclick="handleSearchResultClick(${g.id})">
+        <div class="search-thin-card-content">
+          <span class="crumb-section">${escapeHtml(g.section)}</span>
+          <span class="crumb-arrow">→</span>
+          <span class="crumb-category">${escapeHtml(g.category)}</span>
+          <span class="crumb-arrow">→</span>
+          <span class="crumb-level">${escapeHtml(g.level)}</span>
         </div>
-        <div class="result-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-sm ${hasLink ? 'btn-messenger' : 'btn-secondary'}" onclick="openGroupDirectly(${g.id})">
-            ${hasLink ? "মেসেঞ্জারে যান ↗" : "লিংক যোগ করুন ✏️"}
-          </button>
-          <button class="btn-icon btn-sm ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(${g.id}, this)">
-            ${isFav ? "★" : "☆"}
-          </button>
+        <div class="search-thin-card-action">
+          <span class="search-thin-arrow">↗</span>
         </div>
       </div>
     `;
   });
 
+  html += `</div>`;
   dropdown.innerHTML = html;
 }
 
@@ -410,44 +362,30 @@ function handleSearchResultClick(groupId) {
 }
 
 // ==========================================
-// 7. DIRECT GROUP OPENING (CORE REQUIREMENT)
-// One-Tap Direct to Messenger
+// 7. DIRECT GROUP OPENING (ONE-TAP LAUNCH)
 // ==========================================
 function openGroupDirectly(groupId) {
   const group = groups.find((g) => g.id === groupId);
   if (!group) return;
 
-  // Add to recently opened
   addRecent(group.id);
 
   if (group.link && group.link.trim()) {
-    showToast(`মেসেঞ্জার ওপেন হচ্ছে: ${group.groupName}... 🚀`, "success");
-    // Directly open the saved Messenger / Facebook link in new tab or native app
+    showToast(`Launching ${group.groupName}... 🚀`, "success");
     window.open(group.link.trim(), "_blank", "noopener,noreferrer");
   } else {
-    // If no link is added yet, prompt admin to add it immediately!
     showNoLinkPrompt(group);
   }
 }
 
-/**
- * Prompt shown ONLY when link is not set yet, with 1-click option to add link
- */
 function showNoLinkPrompt(group) {
   const modal = document.getElementById("noLinkPromptModal");
   if (!modal) {
-    showToast(`⚠️ ${group.groupName} এর লিংক এখনো যোগ করা হয়নি! অ্যাডমিন প্যানেল থেকে লিংক দিন।`, "warning");
+    showToast(`⚠️ Link not configured yet for ${group.groupName}.`, "info");
     return;
   }
 
   document.getElementById("noLinkGroupName").textContent = group.groupName;
-  document.getElementById("noLinkAddBtn").onclick = () => {
-    closeModal("noLinkPromptModal");
-    handleAdminAccess(() => {
-      openEditGroupModal(group.id);
-    });
-  };
-
   openModal("noLinkPromptModal");
 }
 
@@ -459,11 +397,11 @@ function toggleFavorite(groupId, buttonEl) {
   let isFav = false;
   if (index > -1) {
     favorites.splice(index, 1);
-    showToast("ফেভারিট থেকে সরানো হয়েছে", "warning");
+    showToast("Removed from favorites", "warning");
   } else {
     favorites.push(groupId);
     isFav = true;
-    showToast("ফেভারিটে সেভ হয়েছে ⭐", "success");
+    showToast("Saved to favorites ⭐", "success");
   }
   saveFavorites();
   updateQuickChipCounts();
@@ -473,10 +411,8 @@ function toggleFavorite(groupId, buttonEl) {
     buttonEl.textContent = isFav ? "★" : "☆";
   }
 
-  if (currentNavigation.view === "favorites") {
-    renderFavoritesView();
-  } else if (currentNavigation.view === "home") {
-    renderHomeView();
+  if (currentCategoryFilter === "favorites") {
+    renderCards();
   }
 }
 
@@ -488,9 +424,6 @@ function addRecent(groupId) {
   }
   saveRecent();
   updateQuickChipCounts();
-  if (currentNavigation.view === "home") {
-    renderRecentSection();
-  }
 }
 
 function updateQuickChipCounts() {
@@ -502,342 +435,91 @@ function updateQuickChipCounts() {
 }
 
 // ==========================================
-// 9. MANUAL NAVIGATION & RENDERING
+// 9. MINIMAL INSTANT CARD RENDERING
+// Direct on the Home Screen! Zero Clutter!
 // ==========================================
-function navigateTo(view, section = null, category = null, level = null) {
-  currentNavigation = { view, section, category, level };
-  const dropdown = document.getElementById("searchResultsDropdown");
-  if (dropdown) dropdown.classList.remove("visible");
-
-  renderApp();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+function filterByCategory(category) {
+  currentCategoryFilter = category;
+  document.querySelectorAll(".filter-chip").forEach((c) => {
+    c.classList.toggle("active", c.getAttribute("data-target") === category);
+  });
+  renderCards();
 }
 
-function renderApp() {
+function renderCards() {
   const mainContent = document.getElementById("mainContentArea");
   if (!mainContent) return;
 
-  switch (currentNavigation.view) {
-    case "section":
-      renderSectionView();
-      break;
-    case "category":
-      renderCategoryView();
-      break;
-    case "favorites":
-      renderFavoritesView();
-      break;
-    case "recent":
-      renderRecentView();
-      break;
-    case "home":
-    default:
-      renderHomeView();
-      break;
+  let displayGroups = [];
+
+  if (currentCategoryFilter === "all") {
+    displayGroups = groups;
+  } else if (currentCategoryFilter === "Science") {
+    displayGroups = groups.filter((g) => g.section === "Science");
+  } else if (currentCategoryFilter === "Humanities") {
+    displayGroups = groups.filter((g) => g.section === "Humanities");
+  } else if (currentCategoryFilter === "Commerce") {
+    displayGroups = groups.filter((g) => g.section === "Commerce");
+  } else if (currentCategoryFilter === "HSC") {
+    displayGroups = groups.filter((g) => g.category === "HSC");
+  } else if (currentCategoryFilter === "Admission") {
+    displayGroups = groups.filter((g) => g.category === "Admission");
+  } else if (currentCategoryFilter === "Hard") {
+    displayGroups = groups.filter((g) => g.level.toLowerCase().includes("hard"));
+  } else if (currentCategoryFilter === "favorites") {
+    displayGroups = favorites.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
+  } else if (currentCategoryFilter === "recent") {
+    displayGroups = recentlyOpened.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
   }
-}
-
-/**
- * HOME VIEW:
- * 3 Section Cards + Favorites & Recent
- */
-function renderHomeView() {
-  const mainContent = document.getElementById("mainContentArea");
-  if (!mainContent) return;
-
-  const scienceCount = groups.filter((g) => g.section === "Science").length;
-  const humanitiesCount = groups.filter((g) => g.section === "Humanities").length;
-  const commerceCount = groups.filter((g) => g.section === "Commerce").length;
 
   let html = `
-    <!-- Instruction Banner -->
+    <!-- Direct Action Notice Bar -->
     <div class="quick-instruction-bar">
-      <span class="instruction-text">⚡ সেকশন বেছে নিয়ে সরাসরি মেসেঞ্জার গ্রুপে জয়েন করুন</span>
-      <button class="btn btn-sm btn-secondary" onclick="handleAdminAccess()">⚙️ লিংক সেট করুন</button>
+      <span class="instruction-text">⚡ Click any card below to launch Messenger directly</span>
     </div>
-
-    <!-- Section Navigation Cards -->
-    <div class="section-cards-grid">
-      <!-- Science Card -->
-      <div class="section-card section-science" onclick="navigateTo('section', 'Science')">
-        <div class="section-card-header">
-          <span class="section-icon">🔬</span>
-          <div>
-            <div class="section-title">Science</div>
-            <span class="section-count-badge">${scienceCount} টি গ্রুপ</span>
-          </div>
-        </div>
-        <p class="section-desc">ফিজিক্স, কেমিস্ট্রি, বায়োলজি ও হায়ার ম্যাথ একাডেমিক এবং এডমিশন গ্রুপ</p>
-        <div class="section-categories-preview">
-          <span class="cat-pill">📘 HSC: L1–L10</span>
-          <span class="cat-pill">🎯 Admission: L1–L10 + Hard Tasks</span>
-        </div>
-      </div>
-
-      <!-- Humanities Card -->
-      <div class="section-card section-humanities" onclick="navigateTo('section', 'Humanities')">
-        <div class="section-card-header">
-          <span class="section-icon">📚</span>
-          <div>
-            <div class="section-title">Humanities</div>
-            <span class="section-count-badge">${humanitiesCount} টি গ্রুপ</span>
-          </div>
-        </div>
-        <p class="section-desc">ইতিহাস, পৌরনীতি, অর্থনীতি, যুক্তিবিদ্যা ও মানবিক শিক্ষা গ্রুপ</p>
-        <div class="section-categories-preview">
-          <span class="cat-pill">📘 HSC: L1–L10</span>
-          <span class="cat-pill">🎯 Admission: L1–L10 + Hard Tasks</span>
-        </div>
-      </div>
-
-      <!-- Commerce Card -->
-      <div class="section-card section-commerce" onclick="navigateTo('section', 'Commerce')">
-        <div class="section-card-header">
-          <span class="section-icon">💼</span>
-          <div>
-            <div class="section-title">Commerce</div>
-            <span class="section-count-badge">${commerceCount} টি গ্রুপ</span>
-          </div>
-        </div>
-        <p class="section-desc">অ্যাকাউন্টিং, ফিন্যান্স, ম্যানেজমেন্ট ও ব্যবসায় শিক্ষা গ্রুপ</p>
-        <div class="section-categories-preview">
-          <span class="cat-pill">📘 HSC: L1–L10</span>
-          <span class="cat-pill">🎯 Admission: L1–L10 + Hard Tasks</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Favorites Section -->
-    <div id="homeFavoritesSection"></div>
-
-    <!-- Recently Opened Section -->
-    <div id="homeRecentSection"></div>
   `;
 
-  mainContent.innerHTML = html;
-  renderFavoritesSection();
-  renderRecentSection();
-}
-
-function renderFavoritesSection() {
-  const container = document.getElementById("homeFavoritesSection");
-  if (!container) return;
-
-  if (favorites.length === 0) {
-    container.innerHTML = "";
-    return;
-  }
-
-  const favGroups = favorites.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
-
-  let html = `
-    <div class="home-section-header">
-      <div class="home-section-title">
-        <span>⭐ বুকমার্ক করা গ্রুপ</span>
-        <span class="home-section-count">${favGroups.length}</span>
-      </div>
-      <button class="footer-link" onclick="navigateTo('favorites')">সবগুলো দেখুন →</button>
-    </div>
-    <div class="horizontal-scroll-list">
-  `;
-
-  favGroups.forEach((g) => {
-    const hasLink = Boolean(g.link && g.link.trim());
+  if (displayGroups.length === 0) {
     html += `
-      <div class="mini-launch-card" onclick="openGroupDirectly(${g.id})">
-        <div>
-          <div class="mini-card-crumb">${g.section} • ${g.category}</div>
-          <div class="mini-card-title">${escapeHtml(g.groupName)}</div>
-        </div>
-        <div style="margin-top: 0.65rem;">
-          <div class="mini-launch-btn">
-            ${hasLink ? '💬 মেসেঞ্জারে যান ↗' : '✏️ লিংক দিন'}
-          </div>
+      <div class="search-empty-state">
+        <div class="search-empty-icon">📁</div>
+        <div class="search-empty-title">No groups in this view</div>
+        <div class="search-empty-hints">Select another category or explore all groups.</div>
+        <div style="margin-top: 1rem;">
+          <button class="btn btn-primary btn-sm" onclick="filterByCategory('all')">Show All Groups</button>
         </div>
       </div>
     `;
-  });
-
-  html += `</div>`;
-  container.innerHTML = html;
-}
-
-function renderRecentSection() {
-  const container = document.getElementById("homeRecentSection");
-  if (!container) return;
-
-  if (recentlyOpened.length === 0) {
-    container.innerHTML = "";
+    mainContent.innerHTML = html;
     return;
   }
 
-  const recGroups = recentlyOpened.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
+  html += `<div class="groups-grid">`;
 
-  let html = `
-    <div class="home-section-header">
-      <div class="home-section-title">
-        <span>🕘 সম্প্রতি ওপেন করা গ্রুপ</span>
-        <span class="home-section-count">${recGroups.length}</span>
-      </div>
-      <button class="footer-link" onclick="clearRecentHistory()">মুছে ফেলুন</button>
-    </div>
-    <div class="horizontal-scroll-list">
-  `;
-
-  recGroups.forEach((g) => {
-    const hasLink = Boolean(g.link && g.link.trim());
-    html += `
-      <div class="mini-launch-card" onclick="openGroupDirectly(${g.id})">
-        <div>
-          <div class="mini-card-crumb">${g.section} • ${g.category}</div>
-          <div class="mini-card-title">${escapeHtml(g.groupName)}</div>
-        </div>
-        <div style="margin-top: 0.65rem;">
-          <div class="mini-launch-btn">
-            ${hasLink ? '💬 মেসেঞ্জারে যান ↗' : '✏️ লিংক দিন'}
-          </div>
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  container.innerHTML = html;
-}
-
-function clearRecentHistory() {
-  recentlyOpened = [];
-  saveRecent();
-  renderRecentSection();
-  updateQuickChipCounts();
-  showToast("হিস্ট্রি ক্লিয়ার করা হয়েছে", "warning");
-}
-
-/**
- * SECTION VIEW:
- * E.g., Science -> Shows HSC & Admission cards
- */
-function renderSectionView() {
-  const mainContent = document.getElementById("mainContentArea");
-  if (!mainContent) return;
-
-  const section = currentNavigation.section;
-  const hscCount = groups.filter((g) => g.section === section && g.category === "HSC").length;
-  const admCount = groups.filter((g) => g.section === section && g.category === "Admission").length;
-
-  let html = `
-    <div class="view-nav-bar">
-      <div class="breadcrumb-trail">
-        <span class="breadcrumb-crumb" onclick="navigateTo('home')">Home</span>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-crumb active">${section}</span>
-      </div>
-      <button class="back-btn" onclick="navigateTo('home')">← ব্যাকে যান</button>
-    </div>
-
-    <div class="category-cards-grid">
-      <!-- HSC Category Card -->
-      <div class="category-card" onclick="navigateTo('category', '${section}', 'HSC')">
-        <div class="cat-header">
-          <div class="cat-name">📘 HSC গ্রুপসমূহ</div>
-          <span class="cat-groups-count">${hscCount} Groups</span>
-        </div>
-        <p class="cat-details">এইচএসসি পরীক্ষার প্রস্তুতি গ্রুপ (L1 থেকে L10)। কার্ডে ক্লিক করলেই সরাসরি মেসেঞ্জার ওপেন হবে।</p>
-        <div class="cat-levels-list">
-          <span class="cat-level-tag">L1</span>
-          <span class="cat-level-tag">L2</span>
-          <span class="cat-level-tag">L3</span>
-          <span class="cat-level-tag">L4</span>
-          <span class="cat-level-tag">L5</span>
-          <span class="cat-level-tag">L6</span>
-          <span class="cat-level-tag">L7</span>
-          <span class="cat-level-tag">L8</span>
-          <span class="cat-level-tag">L9</span>
-          <span class="cat-level-tag">L10</span>
-        </div>
-      </div>
-
-      <!-- Admission Category Card -->
-      <div class="category-card" onclick="navigateTo('category', '${section}', 'Admission')">
-        <div class="cat-header">
-          <div class="cat-name">🎯 Admission গ্রুপসমূহ</div>
-          <span class="cat-groups-count">${admCount} Groups</span>
-        </div>
-        <p class="cat-details">বিশ্ববিদ্যালয় ভর্তি প্রস্তুতি গ্রুপ (L1 থেকে L10 এবং Hard Task 1, 2, 3)। সরাসরি মেসেঞ্জার লিংক।</p>
-        <div class="cat-levels-list">
-          <span class="cat-level-tag">L1–L10</span>
-          <span class="cat-level-tag">Hard Task 1</span>
-          <span class="cat-level-tag">Hard Task 2</span>
-          <span class="cat-level-tag">Hard Task 3</span>
-        </div>
-      </div>
-    </div>
-  `;
-
-  mainContent.innerHTML = html;
-}
-
-/**
- * ==========================================================
- * CATEGORY VIEW - DIRECT MESSENGER CLICK CARDS!
- * (User Requirement: Clicking any card opens Messenger directly!)
- * ==========================================================
- */
-function renderCategoryView() {
-  const mainContent = document.getElementById("mainContentArea");
-  if (!mainContent) return;
-
-  const { section, category } = currentNavigation;
-  const filtered = groups.filter((g) => g.section === section && g.category === category);
-
-  let html = `
-    <div class="view-nav-bar">
-      <div class="breadcrumb-trail">
-        <span class="breadcrumb-crumb" onclick="navigateTo('home')">Home</span>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-crumb" onclick="navigateTo('section', '${section}')">${section}</span>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-crumb active">${category}</span>
-      </div>
-      <button class="back-btn" onclick="navigateTo('section', '${section}')">← ক্যাটাগরিতে ফেরত</button>
-    </div>
-
-    <!-- Direct One-Tap Action Notice -->
-    <div class="direct-open-banner">
-      <span>⚡ যেকোনো লেভেল কার্ডে ক্লিক করলেই ডাইরেক্ট মেসেঞ্জারে নিয়ে যাবে</span>
-      <button class="btn btn-sm btn-secondary" onclick="handleAdminAccess()">⚙️ লিংক ম্যানেজ</button>
-    </div>
-
-    <div class="groups-grid">
-  `;
-
-  filtered.forEach((g) => {
+  displayGroups.forEach((g) => {
     const isFav = favorites.includes(g.id);
     const hasLink = Boolean(g.link && g.link.trim());
     const isHardTask = g.level.toLowerCase().includes("hard");
 
     html += `
-      <!-- DIRECT CLICKABLE CARD: Click anywhere on this card -> Directly Opens Messenger! -->
-      <div class="direct-launch-card ${hasLink ? 'has-link' : ''}" onclick="openGroupDirectly(${g.id})">
+      <!-- FAT, EASY-TO-CLICK CARD WITH DYNAMIC CIRCULATING LIGHT -->
+      <div class="direct-launch-card ${isHardTask ? 'card-hard-task' : ''} ${hasLink ? 'has-link' : ''}" onclick="openGroupDirectly(${g.id})">
         <div>
           <div class="card-top-row">
             <span class="card-level-badge ${isHardTask ? 'badge-hard' : ''}">${g.level}</span>
             <div class="card-quick-actions" onclick="event.stopPropagation()">
-              <!-- Quick Admin Edit button so Shizan Vaiya can change link directly -->
-              <button class="card-quick-btn" title="এই গ্রুপের লিংক এডিট করুন (Admin)" onclick="handleAdminAccess(() => openEditGroupModal(${g.id}))">
-                ✏️
-              </button>
-              <!-- Favorite toggle button -->
-              <button class="card-quick-btn ${isFav ? 'favorited' : ''}" title="${isFav ? 'বুকমার্ক সরান' : 'বুকমার্কে যোগ করুন'}" onclick="toggleFavorite(${g.id}, this)">
+              <!-- Favorite toggle -->
+              <button class="card-quick-btn ${isFav ? 'favorited' : ''}" title="${isFav ? 'Remove Favorite' : 'Save Favorite'}" onclick="toggleFavorite(${g.id}, this)">
                 ${isFav ? '★' : '☆'}
               </button>
             </div>
           </div>
+          <div class="card-section-tag">${escapeHtml(g.section)} • ${escapeHtml(g.category)}</div>
           <div class="card-title">${escapeHtml(g.groupName)}</div>
         </div>
 
         <div class="card-messenger-bar ${hasLink ? 'active-link' : 'pending-link'}">
-          ${hasLink ? '💬 মেসেঞ্জারে যান ↗' : '⚠️ লিংক দিন (Click to Add)'}
+          ${hasLink ? '💬 Open Messenger ↗' : '💬 Link Coming Soon'}
         </div>
       </div>
     `;
@@ -847,141 +529,8 @@ function renderCategoryView() {
   mainContent.innerHTML = html;
 }
 
-/**
- * FAVORITES FULL VIEW
- */
-function renderFavoritesView() {
-  const mainContent = document.getElementById("mainContentArea");
-  if (!mainContent) return;
-
-  const favGroups = favorites.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
-
-  let html = `
-    <div class="view-nav-bar">
-      <div class="breadcrumb-trail">
-        <span class="breadcrumb-crumb" onclick="navigateTo('home')">Home</span>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-crumb active">⭐ ফেভারিট গ্রুপসমূহ</span>
-      </div>
-      <button class="back-btn" onclick="navigateTo('home')">← হোমে যান</button>
-    </div>
-  `;
-
-  if (favGroups.length === 0) {
-    html += `
-      <div class="search-empty-state">
-        <div class="search-empty-icon">⭐</div>
-        <div class="search-empty-title">কোনো ফেভারিট গ্রুপ যোগ করা হয়নি</div>
-        <div class="search-empty-hints">গ্রুপ কার্ডের ওপর স্টার (★) আইকনে ক্লিক করে দ্রুত অ্যাক্সেসের জন্য সেভ রাখুন।</div>
-        <div style="margin-top: 1.25rem;">
-          <button class="btn btn-primary" onclick="navigateTo('home')">গ্রুপ খুঁজুন</button>
-        </div>
-      </div>
-    `;
-  } else {
-    html += `<div class="groups-grid">`;
-    favGroups.forEach((g) => {
-      const hasLink = Boolean(g.link && g.link.trim());
-      html += `
-        <div class="direct-launch-card ${hasLink ? 'has-link' : ''}" onclick="openGroupDirectly(${g.id})">
-          <div>
-            <div class="card-top-row">
-              <span class="card-level-badge">${g.level}</span>
-              <div class="card-quick-actions" onclick="event.stopPropagation()">
-                <button class="card-quick-btn favorited" onclick="toggleFavorite(${g.id}, this)">
-                  ★
-                </button>
-              </div>
-            </div>
-            <div class="card-title">${escapeHtml(g.groupName)}</div>
-            <div style="font-size:0.8rem; font-weight:700; color:var(--accent-primary); margin-bottom:0.5rem;">
-              ${g.section} → ${g.category}
-            </div>
-          </div>
-          <div class="card-messenger-bar ${hasLink ? 'active-link' : 'pending-link'}">
-            ${hasLink ? '💬 মেসেঞ্জারে যান ↗' : '⚠️ লিংক দিন'}
-          </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-  }
-
-  mainContent.innerHTML = html;
-}
-
-/**
- * RECENTLY OPENED FULL VIEW
- */
-function renderRecentView() {
-  const mainContent = document.getElementById("mainContentArea");
-  if (!mainContent) return;
-
-  const recGroups = recentlyOpened.map((id) => groups.find((g) => g.id === id)).filter(Boolean);
-
-  let html = `
-    <div class="view-nav-bar">
-      <div class="breadcrumb-trail">
-        <span class="breadcrumb-crumb" onclick="navigateTo('home')">Home</span>
-        <span class="breadcrumb-separator">›</span>
-        <span class="breadcrumb-crumb active">🕘 সম্প্রতি ওপেন করা গ্রুপ</span>
-      </div>
-      <button class="back-btn" onclick="navigateTo('home')">← হোমে যান</button>
-    </div>
-  `;
-
-  if (recGroups.length === 0) {
-    html += `
-      <div class="search-empty-state">
-        <div class="search-empty-icon">🕘</div>
-        <div class="search-empty-title">সম্প্রতি কোনো গ্রুপ ওপেন করা হয়নি</div>
-        <div class="search-empty-hints">আপনি যে গ্রুপেই ক্লিক করবেন, সেটি স্বয়ংক্রিয়ভাবে এখানে দেখা যাবে।</div>
-        <div style="margin-top: 1.25rem;">
-          <button class="btn btn-primary" onclick="navigateTo('home')">হোমে যান</button>
-        </div>
-      </div>
-    `;
-  } else {
-    html += `
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-        <button class="btn btn-secondary btn-sm" onclick="clearRecentHistory()">হিস্ট্রি মুছুন</button>
-      </div>
-      <div class="groups-grid">
-    `;
-    recGroups.forEach((g) => {
-      const isFav = favorites.includes(g.id);
-      const hasLink = Boolean(g.link && g.link.trim());
-      html += `
-        <div class="direct-launch-card ${hasLink ? 'has-link' : ''}" onclick="openGroupDirectly(${g.id})">
-          <div>
-            <div class="card-top-row">
-              <span class="card-level-badge">${g.level}</span>
-              <div class="card-quick-actions" onclick="event.stopPropagation()">
-                <button class="card-quick-btn ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(${g.id}, this)">
-                  ${isFav ? '★' : '☆'}
-                </button>
-              </div>
-            </div>
-            <div class="card-title">${escapeHtml(g.groupName)}</div>
-            <div style="font-size:0.8rem; font-weight:700; color:var(--accent-primary); margin-bottom:0.5rem;">
-              ${g.section} → ${g.category}
-            </div>
-          </div>
-          <div class="card-messenger-bar ${hasLink ? 'active-link' : 'pending-link'}">
-            ${hasLink ? '💬 মেসেঞ্জারে যান ↗' : '⚠️ লিংক দিন'}
-          </div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-  }
-
-  mainContent.innerHTML = html;
-}
-
 // ==========================================
 // 10. ADMIN PANEL CONTROLLER & LINK MANAGEMENT
-// Update links anytime without coding!
 // ==========================================
 function handleAdminAccess(callbackOnSuccess = null) {
   const isAuth = sessionStorage.getItem(ADMIN_AUTH_KEY) === "true";
@@ -1009,7 +558,7 @@ function openAdminLoginModal(callbackOnSuccess = null) {
     if (entered === ADMIN_PASSWORD) {
       sessionStorage.setItem(ADMIN_AUTH_KEY, "true");
       closeModal("adminLoginModal");
-      showToast("অ্যাডমিন প্যানেল আনলক হয়েছে 🔓", "success");
+      showToast("Admin session unlocked 🔓", "success");
       if (callbackOnSuccess) {
         callbackOnSuccess();
       } else {
@@ -1017,7 +566,7 @@ function openAdminLoginModal(callbackOnSuccess = null) {
       }
     } else {
       if (errorEl) {
-        errorEl.textContent = "ভুল পাসওয়ার্ড! (ডিফল্ট পাসওয়ার্ড: admin123)";
+        errorEl.textContent = "Invalid password! (Default password: admin123)";
         errorEl.style.display = "block";
       }
       input.focus();
@@ -1031,7 +580,7 @@ function openAdminLoginModal(callbackOnSuccess = null) {
 function adminLogout() {
   sessionStorage.removeItem(ADMIN_AUTH_KEY);
   closeModal("adminDashboardModal");
-  showToast("অ্যাডমিন প্যানেল থেকে লগআউট করা হয়েছে", "warning");
+  showToast("Logged out of Admin Panel", "warning");
 }
 
 function openAdminDashboard() {
@@ -1054,19 +603,19 @@ function renderAdminStats() {
   container.innerHTML = `
     <div class="stat-card">
       <div class="stat-value">${total}</div>
-      <div class="stat-label">মোট গ্রুপ সংখ্যা</div>
+      <div class="stat-label">Total Groups</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" style="color: var(--success-color);">${withLink}</div>
-      <div class="stat-label">🟢 মেসেঞ্জার লিংক যুক্ত</div>
+      <div class="stat-label">🟢 Links Configured</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" style="color: var(--warning-color);">${withoutLink}</div>
-      <div class="stat-label">⚪ লিংক বাকি আছে</div>
+      <div class="stat-label">⚪ Links Pending</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value" style="color: var(--accent-primary);">${science}/${humanities}/${commerce}</div>
-      <div class="stat-label">Science / Humanities / Commerce</div>
+      <div class="stat-value" style="color: var(--accent-primary);">${science} / ${humanities} / ${commerce}</div>
+      <div class="stat-label">Science / Hum / Com</div>
     </div>
   `;
 }
@@ -1080,9 +629,9 @@ function renderAdminGroupsList() {
   const filtered = groups.filter((g) => {
     if (search) {
       const match =
+        (g.section || "").toLowerCase().includes(search) ||
         g.groupName.toLowerCase().includes(search) ||
         g.level.toLowerCase().includes(search) ||
-        g.section.toLowerCase().includes(search) ||
         g.category.toLowerCase().includes(search) ||
         (g.link || "").toLowerCase().includes(search);
       if (!match) return false;
@@ -1097,26 +646,26 @@ function renderAdminGroupsList() {
   const tableBody = document.getElementById("adminDesktopTableBody");
   if (tableBody) {
     if (filtered.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">কোনো গ্রুপ পাওয়া যায়নি</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">No groups match your filters</td></tr>`;
     } else {
       tableBody.innerHTML = filtered.map((g) => {
         const hasLink = Boolean(g.link && g.link.trim());
         return `
           <tr>
             <td><strong>#${g.id}</strong></td>
-            <td>${g.section}</td>
-            <td>${g.category}</td>
+            <td><span class="badge badge-messenger">${escapeHtml(g.section)}</span></td>
+            <td><span class="badge ${g.category === 'HSC' ? 'badge-messenger' : 'badge-has-link'}">${g.category}</span></td>
             <td><span class="card-level-badge" style="font-size:0.75rem; padding:0.15rem 0.45rem;">${g.level}</span></td>
             <td><strong>${escapeHtml(g.groupName)}</strong></td>
             <td>
-              ${hasLink ? `<span class="badge badge-has-link" title="${escapeHtml(g.link)}">🟢 লিংক আছে</span>` : '<span class="badge badge-no-link">⚪ লিংক নেই</span>'}
+              ${hasLink ? `<span class="badge badge-has-link" title="${escapeHtml(g.link)}">🟢 Configured</span>` : '<span class="badge badge-no-link">⚪ Pending</span>'}
             </td>
             <td>
               <span class="badge ${g.status === 'Active' ? 'badge-has-link' : 'badge-no-link'}">${g.status}</span>
             </td>
             <td>
               <div style="display:flex; gap:0.4rem;">
-                <button class="btn btn-messenger btn-sm" onclick="openEditGroupModal(${g.id})">✏️ লিংক এডিট</button>
+                <button class="btn btn-messenger btn-sm" onclick="openEditGroupModal(${g.id})">✏️ Edit</button>
                 <button class="btn btn-danger btn-sm" onclick="confirmDeleteGroup(${g.id})">🗑️</button>
               </div>
             </td>
@@ -1129,7 +678,7 @@ function renderAdminGroupsList() {
   const mobileContainer = document.getElementById("adminMobileCardsContainer");
   if (mobileContainer) {
     if (filtered.length === 0) {
-      mobileContainer.innerHTML = `<div style="text-align:center; padding: 2rem;">কোনো গ্রুপ পাওয়া যায়নি</div>`;
+      mobileContainer.innerHTML = `<div style="text-align:center; padding: 2rem;">No groups match your filters</div>`;
     } else {
       mobileContainer.innerHTML = filtered.map((g) => {
         const hasLink = Boolean(g.link && g.link.trim());
@@ -1143,11 +692,11 @@ function renderAdminGroupsList() {
               ${g.section} • ${g.category} • ${g.platform}
             </div>
             <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem;">
-              ${hasLink ? '<span class="badge badge-has-link">🟢 লিংক যুক্ত</span>' : '<span class="badge badge-no-link">⚪ লিংক বাকি</span>'}
+              ${hasLink ? '<span class="badge badge-has-link">🟢 Link Ready</span>' : '<span class="badge badge-no-link">⚪ Link Pending</span>'}
               <span class="badge ${g.status === 'Active' ? 'badge-has-link' : 'badge-no-link'}">${g.status}</span>
             </div>
             <div class="admin-mobile-card-actions">
-              <button class="btn btn-messenger btn-sm" style="flex:1;" onclick="openEditGroupModal(${g.id})">✏️ মেসেঞ্জার লিংক সেট করুন</button>
+              <button class="btn btn-messenger btn-sm" style="flex:1;" onclick="openEditGroupModal(${g.id})">✏️ Configure Link</button>
               <button class="btn btn-danger btn-sm" onclick="confirmDeleteGroup(${g.id})">🗑️</button>
             </div>
           </div>
@@ -1159,10 +708,9 @@ function renderAdminGroupsList() {
 
 // ==========================================
 // 11. ADD & EDIT GROUP FORMS
-// Instant Central Dataset Updates
 // ==========================================
 function openAddGroupModal() {
-  document.getElementById("groupFormTitle").textContent = "নতুন গ্রুপ যোগ করুন";
+  document.getElementById("groupFormTitle").textContent = "Add New Group";
   document.getElementById("groupFormId").value = "";
   document.getElementById("formSection").value = "Science";
   document.getElementById("formCategory").value = "HSC";
@@ -1181,9 +729,9 @@ function openEditGroupModal(groupId) {
   const group = groups.find((g) => g.id === groupId);
   if (!group) return;
 
-  document.getElementById("groupFormTitle").textContent = `লিংক ও তথ্য পরিবর্তন: ${group.groupName}`;
+  document.getElementById("groupFormTitle").textContent = `Configure URL: ${group.groupName}`;
   document.getElementById("groupFormId").value = group.id;
-  document.getElementById("formSection").value = group.section;
+  document.getElementById("formSection").value = group.section || "Science";
   document.getElementById("formCategory").value = group.category;
   document.getElementById("formLevel").value = group.level;
   document.getElementById("formGroupName").value = group.groupName;
@@ -1226,7 +774,7 @@ function handleGroupFormSubmit(e) {
   const status = document.getElementById("formStatus").value;
 
   if (link && !isValidGroupUrl(link)) {
-    showToast("সঠিক URL দিন (https:// বা http:// দিয়ে শুরু হতে হবে)", "error");
+    showToast("Please enter a valid URL starting with https:// or http://", "error");
     document.getElementById("formLink").focus();
     return;
   }
@@ -1248,7 +796,7 @@ function handleGroupFormSubmit(e) {
         status
       };
       saveGroups();
-      showToast(`${groupName} এর লিংক সফলভাবে সেভ হয়েছে! 🎉`, "success");
+      showToast(`Updated ${groupName} link successfully! 🎉`, "success");
     }
   } else {
     const nextId = groups.length > 0 ? Math.max(...groups.map((g) => g.id)) + 1 : 1;
@@ -1266,22 +814,21 @@ function handleGroupFormSubmit(e) {
     };
     groups.push(newGroup);
     saveGroups();
-    showToast(`নতুন গ্রুপ যোগ হয়েছে #${nextId}!`, "success");
+    showToast(`Added new group #${nextId}!`, "success");
   }
 
   closeModal("groupFormModal");
 
-  // Re-render UI everywhere
   renderAdminStats();
   renderAdminGroupsList();
-  renderApp();
+  renderCards();
 }
 
 function confirmDeleteGroup(groupId) {
   const group = groups.find((g) => g.id === groupId);
   if (!group) return;
 
-  const confirmed = window.confirm(`আপনি কি নিশ্চিত যে "${group.groupName}" গ্রুপটি ডিলিট করতে চান?`);
+  const confirmed = window.confirm(`Are you sure you want to delete "${group.groupName}"?`);
   if (confirmed) {
     groups = groups.filter((g) => g.id !== groupId);
     favorites = favorites.filter((id) => id !== groupId);
@@ -1292,8 +839,8 @@ function confirmDeleteGroup(groupId) {
 
     renderAdminStats();
     renderAdminGroupsList();
-    renderApp();
-    showToast(`${group.groupName} ডিলিট করা হয়েছে`, "warning");
+    renderCards();
+    showToast(`Deleted ${group.groupName}`, "warning");
   }
 }
 
@@ -1309,10 +856,10 @@ function exportDataBackup() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showToast("ব্যাকআপ ডাউনলোড হয়েছে 📤", "success");
+    showToast("Backup exported successfully 📤", "success");
   } catch (err) {
     console.error("Export error:", err);
-    showToast("ব্যাকআপ এক্সপোর্ট করতে সমস্যা হয়েছে", "error");
+    showToast("Failed to export backup", "error");
   }
 }
 
@@ -1330,22 +877,22 @@ function handleImportFile(event) {
     try {
       const parsed = JSON.parse(e.target.result);
       if (!Array.isArray(parsed) || parsed.length === 0) {
-        showToast("ভুল ফাইল: JSON ব্যাকআপ ফাইল নির্বাচন করুন", "error");
+        showToast("Invalid backup file: expected a JSON array", "error");
         return;
       }
 
-      const confirmed = window.confirm(`এই ব্যাকআপ থেকে ${parsed.length} টি গ্রুপ রিস্টোর হবে। বর্তমান ডেটা প্রতিস্থাপিত হবে। এগিয়ে যাবেন?`);
+      const confirmed = window.confirm(`Importing this backup will replace current group data (${parsed.length} groups loaded). Continue?`);
       if (confirmed) {
         groups = parsed;
         saveGroups();
         renderAdminStats();
         renderAdminGroupsList();
-        renderApp();
-        showToast(`সফলভাবে ${groups.length} টি গ্রুপ রিস্টোর হয়েছে! 📥`, "success");
+        renderCards();
+        showToast(`Successfully restored ${groups.length} groups! 📥`, "success");
       }
     } catch (err) {
       console.error("Import error:", err);
-      showToast("ব্যাকআপ ফাইল রিড করতে সমস্যা হয়েছে", "error");
+      showToast("Error reading backup JSON file", "error");
     }
   };
   reader.readAsText(file);
@@ -1354,7 +901,7 @@ function handleImportFile(event) {
 
 function resetToDefaultGroups() {
   const confirmed = window.confirm(
-    "⚠️ সতর্কবার্তা: এটি আপনার সমস্ত কাস্টম মেসেঞ্জার লিংক মুছে মূল ৬৯টি ডিফল্ট গ্রুপ রিস্টোর করবে। আপনি কি নিশ্চিত?"
+    "⚠️ WARNING: This will replace all customized group URLs with the original default 69-group dataset. Are you sure you want to proceed?"
   );
 
   if (confirmed) {
@@ -1362,8 +909,8 @@ function resetToDefaultGroups() {
     saveGroups();
     renderAdminStats();
     renderAdminGroupsList();
-    renderApp();
-    showToast("ডিফল্ট ৬৯টি গ্রুপ রিস্টোর সম্পন্ন হয়েছে! 🔄", "success");
+    renderCards();
+    showToast("Reset to default 69 groups completed! 🔄", "success");
   }
 }
 
@@ -1428,7 +975,7 @@ function initPWAInstall() {
   window.addEventListener("appinstalled", () => {
     installBtn.style.display = "none";
     deferredInstallPrompt = null;
-    showToast("হোম স্ক্রিনে অ্যাপ ইনস্টল হয়েছে! 🎓", "success");
+    showToast("Installed to home screen! 🎓", "success");
   });
 
   installBtn.addEventListener("click", async () => {
@@ -1489,19 +1036,8 @@ function setupEventListeners() {
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
-      document.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
-      chip.classList.add("active");
       const target = chip.getAttribute("data-target");
-
-      if (target === "home") navigateTo("home");
-      else if (target === "Science") navigateTo("section", "Science");
-      else if (target === "Humanities") navigateTo("section", "Humanities");
-      else if (target === "Commerce") navigateTo("section", "Commerce");
-      else if (target === "favorites") navigateTo("favorites");
-      else if (target === "recent") navigateTo("recent");
-      else if (target === "HSC") applySearchTerm("HSC");
-      else if (target === "Admission") applySearchTerm("Admission");
-      else if (target === "Hard") applySearchTerm("Hard");
+      filterByCategory(target);
     });
   });
 
@@ -1528,6 +1064,26 @@ function setupEventListeners() {
 
   const importInput = document.getElementById("importFileInput");
   if (importInput) importInput.addEventListener("change", handleImportFile);
+
+  const pasteBtn = document.getElementById("pasteLinkBtn");
+  if (pasteBtn) {
+    pasteBtn.addEventListener("click", async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            document.getElementById("formLink").value = text.trim();
+            showToast("Link pasted from clipboard! 📋", "success");
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Clipboard access denied or unsupported", e);
+      }
+      document.getElementById("formLink").focus();
+      showToast("Paste URL into the box (Ctrl+V / Long press)", "info");
+    });
+  }
 
   document.querySelectorAll(".modal-overlay").forEach((overlay) => {
     overlay.addEventListener("click", (e) => {
