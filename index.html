@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Educational Group Hub</title>
+  <meta name="description" content="All educational Facebook and Messenger groups organized in one place for fast, direct access." />
+  <meta property="og:title" content="Educational Group Hub" />
+  <meta property="og:description" content="All educational Facebook and Messenger groups organized in one place for fast, direct access." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#0066ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Group Hub" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- Offline Status Banner -->
+  <div id="offlineBanner" class="offline-banner">
+    ⚠️ অফলাইন মোড — ইন্টারনেট কানেকশন পাওয়া যাচ্ছে না। পূর্বে লোড হওয়া গ্রুপগুলো দেখতে পাচ্ছেন।
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-branding" onclick="navigateTo('home')">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h1>Educational Group Hub</h1>
+          <p>সবগুলো মেসেঞ্জার গ্রুপ এক ক্লিকে</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="pwaInstallBtn" class="header-btn pwa-install-btn" style="display: none;" title="হোম স্ক্রিনে অ্যাপ ইনস্টল করুন">
+          📲 Install App
+        </button>
+        <button id="themeToggleBtn" class="header-btn theme-toggle" title="লাইট / ডার্ক মোড পরিবর্তন">
+          ☀️
+        </button>
+        <button id="adminPanelBtn" class="header-btn admin-btn" title="লিংক পরিবর্তন ও অ্যাডমিন প্যানেল">
+          ⚙️ অ্যাডমিন
+        </button>
+      </div>
+    </header>
+
+    <!-- Global Live Search Section -->
+    <section class="search-wrapper">
+      <div class="search-box-container">
+        <span class="search-icon-left">🔍</span>
+        <input
+          type="text"
+          id="globalSearchInput"
+          class="search-input"
+          placeholder="গ্রুপ খুঁজুন (যেমন: L1, L10, Science, Hard Task)..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="searchClearBtn" class="search-clear-btn" title="ক্লিয়ার করুন">✕</button>
+      </div>
+      <!-- Autocomplete Dropdown -->
+      <div id="searchResultsDropdown" class="search-results-dropdown"></div>
+    </section>
+
+    <!-- Quick Filter Chips Bar -->
+    <nav class="quick-chips-bar" aria-label="Quick Categories">
+      <button class="filter-chip active" data-target="home">সব সেকশন</button>
+      <button class="filter-chip" data-target="Science">🔬 Science</button>
+      <button class="filter-chip" data-target="Humanities">📚 Humanities</button>
+      <button class="filter-chip" data-target="Commerce">💼 Commerce</button>
+      <button class="filter-chip" data-target="HSC">📘 HSC</button>
+      <button class="filter-chip" data-target="Admission">🎯 Admission</button>
+      <button class="filter-chip" data-target="Hard">🔥 Hard Tasks</button>
+      <button class="filter-chip" data-target="favorites">
+        ⭐ বুকমার্ক (<span id="favChipCount">0</span>)
+      </button>
+      <button class="filter-chip" data-target="recent">
+        🕘 রিসেন্ট (<span id="recentChipCount">0</span>)
+      </button>
+    </nav>
+
+    <!-- Dynamic Main Content Area -->
+    <main id="mainContentArea">
+      <!-- Injected by script.js -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Educational Group Hub • শিঙ্গান ভাইয়ার স্টুডেন্ট গ্রুপ ডিরেক্টরি</p>
+      <div class="footer-links">
+        <span class="footer-link" onclick="navigateTo('home')">হোম</span>
+        <span>•</span>
+        <span class="footer-link" onclick="navigateTo('favorites')">বুকমার্ক</span>
+        <span>•</span>
+        <span class="footer-link" onclick="handleAdminAccess()">⚙️ অ্যাডমিন প্যানেল (লিংক পরিবর্তন)</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================
+       MODALS
+       ======================================================== -->
+
+  <!-- 1. No Link Added Notice Modal (Shown ONLY when a clicked group has no link yet) -->
+  <div id="noLinkPromptModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚠️ মেসেঞ্জার লিংক দেওয়া হয়নি</h3>
+        <button class="modal-close-btn" onclick="closeModal('noLinkPromptModal')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 1.5rem 1rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔗</div>
+        <h4 id="noLinkGroupName" style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);"></h4>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+          এই গ্রুপের ফেসবুক/মেসেঞ্জার লিংকটি অ্যাডমিন এখনো যোগ করেননি।<br>
+          আপনি অ্যাডমিন হলে এখনই লিংকটি পেস্ট করে সেভ করতে পারেন।
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="closeModal('noLinkPromptModal')">বন্ধ করুন</button>
+        <button id="noLinkAddBtn" class="btn btn-messenger">⚙️ এখনই লিংক যোগ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Admin Login Password Gate Modal -->
+  <div id="adminLoginModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ অ্যাডমিন লগইন</h3>
+        <button class="modal-close-btn" onclick="closeModal('adminLoginModal')">✕</button>
+      </div>
+      <form id="adminLoginForm">
+        <div class="modal-body">
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            গ্রুপের মেসেঞ্জার লিংক পরিবর্তন বা নতুন গ্রুপ যোগ করতে পাসওয়ার্ড দিন।
+          </p>
+          <div class="form-group">
+            <label for="adminPasswordInput">অ্যাডমিন পাসওয়ার্ড</label>
+            <input
+              type="password"
+              id="adminPasswordInput"
+              placeholder="পাসওয়ার্ড লিখুন..."
+              required
+              autocomplete="current-password"
+            />
+            <div class="form-help">ডিফল্ট পাসওয়ার্ড: <code>admin123</code> (script.js থেকে পরিবর্তনযোগ্য)</div>
+            <div id="adminLoginError" style="color: var(--danger-color); font-size: 0.85rem; font-weight: 700; margin-top: 0.5rem; display: none;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('adminLoginModal')">বাতিল</button>
+          <button type="submit" class="btn btn-messenger">আনলক করুন 🔓</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Full Admin Dashboard Modal -->
+  <div id="adminDashboardModal" class="modal-overlay">
+    <div class="modal-container modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ অ্যাডমিন কন্ট্রোল প্যানেল (লিংক পরিবর্তন)</h3>
+        <button class="modal-close-btn" onclick="closeModal('adminDashboardModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Live Stats Overview -->
+        <div id="adminStatsContainer" class="admin-stats-grid"></div>
+
+        <!-- Admin Quick Actions Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-actions-left">
+            <button class="btn btn-messenger btn-sm" onclick="openAddGroupModal()">➕ নতুন গ্রুপ</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportDataBackup()">📤 ব্যাকআপ এক্সপোর্ট</button>
+            <button class="btn btn-secondary btn-sm" onclick="triggerImportFilePicker()">📥 ব্যাকআপ ইমপোর্ট</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetToDefaultGroups()">🔄 রিসেট ডিফল্ট</button>
+          </div>
+          <div class="admin-actions-right">
+            <button class="btn btn-danger btn-sm" onclick="adminLogout()">🚪 লগআউট</button>
+          </div>
+        </div>
+
+        <!-- Filters & Search Bar -->
+        <div class="admin-filters-bar">
+          <input
+            type="text"
+            id="adminSearchInput"
+            placeholder="গ্রুপের নাম, লেভেল বা লিংক দিয়ে সার্চ করুন..."
+          />
+          <select id="adminSectionFilter">
+            <option value="All">সব সেকশন</option>
+            <option value="Science">Science</option>
+            <option value="Humanities">Humanities</option>
+            <option value="Commerce">Commerce</option>
+          </select>
+          <select id="adminCategoryFilter">
+            <option value="All">সব ক্যাটাগরি</option>
+            <option value="HSC">HSC</option>
+            <option value="Admission">Admission</option>
+          </select>
+          <select id="adminLinkFilter">
+            <option value="All">সব লিংক স্ট্যাটাস</option>
+            <option value="withLink">🟢 লিংক যুক্ত আছে</option>
+            <option value="withoutLink">⚪ লিংক দেওয়া বাকি</option>
+          </select>
+        </div>
+
+        <!-- Data Presentation (Responsive Desktop Table / Mobile Cards) -->
+        <div class="admin-table-wrapper">
+          <table class="admin-desktop-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>সেকশন</th>
+                <th>ক্যাটাগরি</th>
+                <th>লেভেল</th>
+                <th>গ্রুপের নাম</th>
+                <th>লিংক স্ট্যাটাস</th>
+                <th>অবস্থা</th>
+                <th>অ্যাকশন</th>
+              </tr>
+            </thead>
+            <tbody id="adminDesktopTableBody"></tbody>
+          </table>
+
+          <div id="adminMobileCardsContainer" class="admin-mobile-cards"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('adminDashboardModal')">প্যানেল বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Add / Edit Group Modal -->
+  <div id="groupFormModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="groupFormTitle" class="modal-title">মেসেঞ্জার লিংক পরিবর্তন করুন</h3>
+        <button class="modal-close-btn" onclick="closeModal('groupFormModal')">✕</button>
+      </div>
+      <form id="groupEditForm">
+        <input type="hidden" id="groupFormId" value="" />
+        <div class="modal-body">
+          <div class="form-group" style="background: var(--bg-input); padding: 0.85rem; border-radius: var(--radius-sm); border: 1.5px solid var(--accent-border); margin-bottom: 1.25rem;">
+            <label for="formLink" style="color: var(--accent-primary); font-size: 0.95rem;">💬 ফেসবুক / মেসেঞ্জার গ্রুপ লিংক</label>
+            <input
+              type="text"
+              id="formLink"
+              placeholder="https://m.me/j/Abc123xyz অথবা https://facebook.com/groups/..."
+              style="font-size: 1.05rem; font-weight: 600;"
+            />
+            <div class="form-help">এই লিংকটি পেস্ট করে সেভ করলেই স্টুডেন্টরা কার্ডে ক্লিক করা মাত্রই সরাসরি এই লিংকে চলে যাবে।</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="formSection">সেকশন</label>
+              <select id="formSection" required>
+                <option value="Science">Science</option>
+                <option value="Humanities">Humanities</option>
+                <option value="Commerce">Commerce</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="formCategory">ক্যাটাগরি</label>
+              <select id="formCategory" required>
+                <option value="HSC">HSC</option>
+                <option value="Admission">Admission</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="formLevel">লেভেল</label>
+              <input type="text" id="formLevel" placeholder="যেমন: L1, Hard Task 1" required />
+            </div>
+            <div class="form-group">
+              <label for="formPlatform">প্ল্যাটফর্ম</label>
+              <select id="formPlatform">
+                <option value="Messenger">Messenger</option>
+                <option value="Facebook">Facebook</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Telegram">Telegram</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="formGroupName">গ্রুপের নাম</label>
+            <input type="text" id="formGroupName" placeholder="যেমন: Science HSC L1" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="formAdmin">অ্যাডমিন নাম</label>
+              <input type="text" id="formAdmin" placeholder="যেমন: Shizan Vaiya" />
+            </div>
+            <div class="form-group">
+              <label for="formBatch">ব্যাচ</label>
+              <input type="text" id="formBatch" placeholder="যেমন: HSC 2025/2026" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="formStatus">স্ট্যাটাস</label>
+            <select id="formStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('groupFormModal')">বাতিল</button>
+          <button type="submit" class="btn btn-messenger">সেভ করুন 💾</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. iOS Safari PWA Install Modal -->
+  <div id="iosInstallModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📲 আইফোনে ইনস্টল করার নিয়ম</h3>
+        <button class="modal-close-btn" onclick="closeModal('iosInstallModal')">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 0.95rem; line-height: 1.6;">
+        <ol style="padding-left: 1.25rem; margin-bottom: 1rem;">
+          <li>সাফারি ব্রাউজারের নিচে <strong>Share বাটন</strong>-এ ট্যাপ করুন।</li>
+          <li>নিচে স্ক্রোল করে <strong>Add to Home Screen</strong> এ চাপ দিন।</li>
+          <li>উপরে <strong>Add</strong> চাপলেই অ্যাপটি মোবাইলের হোম স্ক্রিনে চলে আসবে।</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-messenger" onclick="closeModal('iosInstallModal')">বুঝেছি</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden File Input for Backup Import -->
+  <input type="file" id="importFileInput" accept=".json,application/json" style="display: none;" />
+
+  <!-- Toast Notifications Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main Application Script -->
+  <script src="/script.js"></script>
+</body>
+</html>

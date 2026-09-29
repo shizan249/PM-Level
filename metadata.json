@@ -1,0 +1,6 @@
+{
+  "name": "Educational Group Hub",
+  "description": "All educational Facebook and Messenger groups organized in one place for fast, direct access.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
